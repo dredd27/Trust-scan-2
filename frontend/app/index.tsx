@@ -213,22 +213,27 @@ export default function Index() {
           Verifica in pochi passaggi il livello di rischio.
         </Text>
       </View>
-      <View style={styles.featureRow}>
-        <FeatureChip icon="image-search" label="Analisi Screenshot" />
-        <FeatureChip icon="text-search" label="Analisi Testo" />
-      </View>
-      <View style={styles.featureRow}>
-        <FeatureChip icon="brain" label="Intelligenza Artificiale" />
-        <FeatureChip icon="speedometer" label="Risultato Istantaneo" />
+      <View style={styles.featuresCard}>
+        <Text style={styles.featuresTitle}>Cosa puoi fare:</Text>
+        <FeatureItem icon="image-search" label="Analisi Screenshot" />
+        <FeatureItem icon="text-search" label="Analisi Testo" />
+        <FeatureItem icon="brain" label="Intelligenza Artificiale" />
+        <FeatureItem icon="speedometer" label="Risultato Istantaneo" />
       </View>
       <TouchableOpacity
         testID="start-verification-btn"
-        style={styles.primaryBtn}
+        style={styles.ctaBtn}
         onPress={goToStep1}
-        activeOpacity={0.8}
+        activeOpacity={0.85}
       >
-        <MaterialCommunityIcons name="line-scan" size={22} color="#FFF" />
-        <Text style={styles.primaryBtnText}>Inizia la Verifica</Text>
+        <View style={styles.ctaInner}>
+          <MaterialCommunityIcons name="shield-search" size={26} color="#FFF" />
+          <View>
+            <Text style={styles.ctaBtnText}>Inizia la Verifica</Text>
+            <Text style={styles.ctaBtnSub}>Analizza un messaggio sospetto</Text>
+          </View>
+        </View>
+        <MaterialCommunityIcons name="arrow-right" size={24} color="rgba(255,255,255,0.7)" />
       </TouchableOpacity>
     </Animated.View>
   );
@@ -596,11 +601,11 @@ function StepHeader({ step, title }: { step: number; title: string }) {
   );
 }
 
-function FeatureChip({ icon, label }: { icon: string; label: string }) {
+function FeatureItem({ icon, label }: { icon: string; label: string }) {
   return (
-    <View style={styles.featureChip}>
-      <MaterialCommunityIcons name={icon as any} size={18} color={C.primary} />
-      <Text style={styles.featureChipText}>{label}</Text>
+    <View style={styles.featureItem}>
+      <MaterialCommunityIcons name={icon as any} size={20} color={C.primary} />
+      <Text style={styles.featureItemText}>{label}</Text>
     </View>
   );
 }
@@ -717,18 +722,66 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 12,
   },
-  featureChip: {
+  featuresCard: {
+    backgroundColor: C.paper,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 8,
+  },
+  featuresTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: C.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 14,
+  },
+  featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    backgroundColor: C.primaryLight,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 24,
+    gap: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: C.border,
   },
-  featureChipText: { fontSize: 13, fontWeight: '600', color: C.primary },
+  featureItemText: {
+    fontSize: 15,
+    color: C.textPrimary,
+    fontWeight: '500',
+  },
 
-  // Buttons
+  // CTA Button
+  ctaBtn: {
+    backgroundColor: C.primary,
+    borderRadius: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 28,
+    shadowColor: C.primary,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  ctaInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  ctaBtnText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  ctaBtnSub: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 13,
+    fontWeight: '400',
+    marginTop: 2,
+  },
   primaryBtn: {
     backgroundColor: C.primary,
     borderRadius: 12,
