@@ -56,6 +56,7 @@ const QUESTIONS = [
   { id: 5, text: 'Il link sembra strano o diverso dal sito ufficiale?', desc: '', hasNonSo: true },
   { id: 6, text: 'Ci sono errori grammaticali o frasi strane?', desc: '' },
   { id: 7, text: 'Ti promette un rimborso o un premio?', desc: '' },
+  { id: 8, text: 'Richiede di contattare un numero di telefono mobile?', desc: '' },
 ];
 
 type Answer = 'SI' | 'NO' | 'NON SO' | null;
@@ -67,7 +68,7 @@ export default function Index() {
   const [messageText, setMessageText] = useState('');
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [imageUri, setImageUri] = useState<string | null>(null);
-  const [answers, setAnswers] = useState<Answer[]>(new Array(7).fill(null));
+  const [answers, setAnswers] = useState<Answer[]>(new Array(8).fill(null));
   const [aiAnalysis, setAiAnalysis] = useState('');
   const [aiIndicators, setAiIndicators] = useState<string[]>([]);
   const [extractedText, setExtractedText] = useState<string | null>(null);
@@ -176,7 +177,7 @@ export default function Index() {
     setMessageText('');
     setImageBase64(null);
     setImageUri(null);
-    setAnswers(new Array(7).fill(null));
+    setAnswers(new Array(8).fill(null));
     setAiAnalysis('');
     setAiIndicators([]);
     setExtractedText(null);
@@ -455,7 +456,7 @@ export default function Index() {
             {riskResult.label}
           </Text>
           <Text style={styles.resultScore} testID="risk-score">
-            Punteggio: {riskResult.score}/14
+            Punteggio: {riskResult.score}/16
           </Text>
           <Text style={styles.resultMessage}>{riskResult.message}</Text>
         </Animated.View>
