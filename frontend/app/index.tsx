@@ -525,13 +525,7 @@ export default function Index() {
           </Text>
         </Animated.View>
 
-        {/* Actions */}
-        <TouchableOpacity testID="new-verification-btn" style={styles.primaryBtn} onPress={resetAll} activeOpacity={0.8}>
-          <MaterialCommunityIcons name="refresh" size={22} color="#FFF" />
-          <Text style={styles.primaryBtnText}>Nuova Verifica</Text>
-        </TouchableOpacity>
-
-        {/* Support Section */}
+        {/* Support Section - BEFORE Nuova Verifica */}
         <Animated.View entering={FadeInDown.delay(600).duration(400)} style={styles.supportSection}>
           <Text style={styles.supportTitle}>Ti è stato utile?</Text>
           <Text style={styles.supportDesc}>
@@ -584,6 +578,12 @@ export default function Index() {
             </TouchableOpacity>
           </View>
         </Animated.View>
+
+        {/* Nuova Verifica - at the very bottom */}
+        <TouchableOpacity testID="new-verification-btn" style={styles.primaryBtn} onPress={resetAll} activeOpacity={0.8}>
+          <MaterialCommunityIcons name="refresh" size={22} color="#FFF" />
+          <Text style={styles.primaryBtnText}>Nuova Verifica</Text>
+        </TouchableOpacity>
 
         {/* Donation Modal */}
         <Modal
