@@ -536,7 +536,8 @@ export default function Index() {
             testID="add-bookmark-btn"
             style={styles.bookmarkBtn}
             onPress={() => {
-              Linking.openURL('https://trust-scan-2.preview.emergentagent.com');
+              const appUrl = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://trust-scan-2.preview.emergentagent.com';
+              Linking.openURL(appUrl);
             }}
             activeOpacity={0.8}
           >
