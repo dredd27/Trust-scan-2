@@ -12,6 +12,8 @@ import {
   Keyboard,
   Image,
   Dimensions,
+  Modal,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -75,6 +77,7 @@ export default function Index() {
   const [riskResult, setRiskResult] = useState<any>(null);
   const [loadingAi, setLoadingAi] = useState(false);
   const [loadingRisk, setLoadingRisk] = useState(false);
+  const [donationModal, setDonationModal] = useState<'paypal' | 'satispay' | null>(null);
   const scrollRef = useRef<ScrollView>(null);
 
   // ---------- Pick Image ----------
@@ -208,8 +211,11 @@ export default function Index() {
       <Text style={styles.welcomeTitle}>SOS Truffa</Text>
       <Text style={styles.welcomeSubtitle}>Verifica Messaggi</Text>
       <View style={styles.welcomeDescCard}>
+        <MaterialCommunityIcons name="alert-decagram" size={24} color={C.primary} style={{ alignSelf: 'center', marginBottom: 8 }} />
         <Text style={styles.welcomeDesc}>
-          Hai ricevuto un SMS, una email o un messaggio sospetto?{'\n'}
+          Hai ricevuto un SMS, una email o un messaggio sospetto?
+        </Text>
+        <Text style={styles.welcomeDescBold}>
           Verifica in pochi passaggi il livello di rischio.
         </Text>
       </View>
@@ -460,9 +466,6 @@ export default function Index() {
           <Text style={[styles.resultLabel, { color: levelColor }]} testID="risk-label">
             {riskResult.label}
           </Text>
-          <Text style={styles.resultScore} testID="risk-score">
-            Punteggio: {riskResult.score}/16
-          </Text>
           <Text style={styles.resultMessage}>{riskResult.message}</Text>
         </Animated.View>
 
@@ -528,9 +531,94 @@ export default function Index() {
           <Text style={styles.primaryBtnText}>Nuova Verifica</Text>
         </TouchableOpacity>
 
-        <Text style={styles.finalMessage}>
-          Se questo strumento ti è stato utile, puoi salvarlo tra i preferiti.
-        </Text>
+        {/* Support Section */}
+        <Animated.View entering={FadeInDown.delay(600).duration(400)} style={styles.supportSection}>
+          <Text style={styles.supportTitle}>Ti è stato utile?</Text>
+          <Text style={styles.supportDesc}>
+            Salva questo strumento tra i preferiti per averlo sempre a portata di mano.
+          </Text>
+
+          <TouchableOpacity
+            testID="add-bookmark-btn"
+            style={styles.bookmarkBtn}
+            onPress={() => {
+              Linking.openURL('https://trust-scan-2.preview.emergentagent.com');
+            }}
+            activeOpacity={0.8}
+          >
+            <MaterialCommunityIcons name="bookmark-plus" size={22} color={C.primary} />
+            <Text style={styles.bookmarkBtnText}>Aggiungi ai Preferiti</Text>
+          </TouchableOpacity>
+
+          <View style={styles.donationDivider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>oppure</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          <Text style={styles.donationDesc}>
+            Vuoi supportare questo progetto gratuito?
+          </Text>
+
+          <View style={styles.donationRow}>
+            <TouchableOpacity
+              testID="donate-paypal-btn"
+              style={styles.donateBtn}
+              onPress={() => Linking.openURL('https://www.paypal.com/qrcodes/p2pqrc/KCLXJ8CWZ8BES')}
+              activeOpacity={0.8}
+            >
+              <MaterialCommunityIcons name="coffee" size={20} color="#003087" />
+              <Text style={styles.donateBtnText}>Offri un caffè</Text>
+              <Text style={styles.donateBtnSub}>PayPal</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              testID="donate-satispay-btn"
+              style={styles.donateBtn}
+              onPress={() => setDonationModal('satispay')}
+              activeOpacity={0.8}
+            >
+              <MaterialCommunityIcons name="heart" size={20} color="#E42313" />
+              <Text style={styles.donateBtnText}>Dona con</Text>
+              <Text style={styles.donateBtnSub}>Satispay</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+
+        {/* Donation Modal */}
+        <Modal
+          visible={donationModal !== null}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setDonationModal(null)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <TouchableOpacity
+                testID="close-donation-modal"
+                style={styles.modalClose}
+                onPress={() => setDonationModal(null)}
+              >
+                <MaterialCommunityIcons name="close" size={24} color={C.textSecondary} />
+              </TouchableOpacity>
+              <Text style={styles.modalTitle}>
+                {donationModal === 'paypal' ? 'Dona con PayPal' : 'Dona con Satispay'}
+              </Text>
+              <Text style={styles.modalDesc}>
+                Scansiona il QR code per fare una donazione
+              </Text>
+              <Image
+                source={
+                  donationModal === 'paypal'
+                    ? require('../assets/images/paypal_qr.jpeg')
+                    : require('../assets/images/satispay_qr.jpeg')
+                }
+                style={styles.qrImage}
+              />
+              <Text style={styles.modalThank}>Grazie per il tuo supporto!</Text>
+            </View>
+          </View>
+        </Modal>
       </Animated.View>
     );
   };
@@ -711,10 +799,18 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   welcomeDesc: {
-    fontSize: 16,
+    fontSize: 17,
     lineHeight: 26,
-    color: C.textSecondary,
+    color: C.textPrimary,
     textAlign: 'center',
+  },
+  welcomeDescBold: {
+    fontSize: 17,
+    lineHeight: 26,
+    color: C.textPrimary,
+    textAlign: 'center',
+    fontWeight: '700',
+    marginTop: 4,
   },
   featureRow: {
     flexDirection: 'row',
@@ -956,8 +1052,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   resultLabel: { fontSize: 22, fontWeight: '700', textAlign: 'center', marginTop: 8 },
-  resultScore: { fontSize: 16, fontWeight: '600', color: C.textSecondary },
-  resultMessage: { fontSize: 15, color: C.textPrimary, textAlign: 'center', lineHeight: 22, marginTop: 4 },
+  resultMessage: { fontSize: 16, color: C.textPrimary, textAlign: 'center', lineHeight: 24, marginTop: 4 },
 
   // AI Card
   aiCard: {
@@ -1019,12 +1114,139 @@ const styles = StyleSheet.create({
   },
   disclaimerText: { fontSize: 13, color: C.textSecondary, lineHeight: 20, flex: 1 },
 
-  // Final
-  finalMessage: {
+  // Support Section
+  supportSection: {
+    marginTop: 24,
+    backgroundColor: C.paper,
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  supportTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: C.textPrimary,
+    marginBottom: 8,
+  },
+  supportDesc: {
+    fontSize: 15,
+    color: C.textSecondary,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 16,
+  },
+  bookmarkBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: C.primaryLight,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: C.primary,
+  },
+  bookmarkBtnText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: C.primary,
+  },
+  donationDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 20,
+    width: '100%',
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: C.border,
+  },
+  dividerText: {
+    fontSize: 13,
+    color: C.textSecondary,
+    paddingHorizontal: 12,
+  },
+  donationDesc: {
     fontSize: 14,
     color: C.textSecondary,
     textAlign: 'center',
-    marginTop: 20,
-    fontStyle: 'italic',
+    marginBottom: 16,
+  },
+  donationRow: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  donateBtn: {
+    flex: 1,
+    backgroundColor: C.bg,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    gap: 4,
+    borderWidth: 1,
+    borderColor: C.border,
+  },
+  donateBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: C.textPrimary,
+  },
+  donateBtnSub: {
+    fontSize: 12,
+    color: C.textSecondary,
+  },
+
+  // Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    backgroundColor: C.paper,
+    borderRadius: 20,
+    padding: 28,
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: 360,
+  },
+  modalClose: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    padding: 8,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: C.textPrimary,
+    marginBottom: 8,
+  },
+  modalDesc: {
+    fontSize: 14,
+    color: C.textSecondary,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  qrImage: {
+    width: 250,
+    height: 250,
+    borderRadius: 12,
+    resizeMode: 'contain',
+  },
+  modalThank: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: C.primary,
+    marginTop: 16,
   },
 });
