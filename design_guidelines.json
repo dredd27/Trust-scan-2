@@ -1,0 +1,151 @@
+{
+  "project_name": "SOS Truffa – Verifica Messaggi",
+  "app_type": "mobile_app",
+  "framework": "React Native Expo",
+  "language": "Italian",
+  "design_philosophy": {
+    "theme": "Light Mode (Trust & Security)",
+    "tone": "Authoritative, Calming, Professional, Secure",
+    "core_principles": [
+      "Clarity over decorative flair",
+      "High contrast for readability",
+      "Distinct status colors (Safe vs Danger)",
+      "Generous touch targets (min 48px)"
+    ]
+  },
+  "typography": {
+    "font_family_heading": "System (Bold/Heavy weight)",
+    "font_family_body": "System (Regular/Medium weight)",
+    "scale": {
+      "h1": { "fontSize": 32, "fontWeight": "700", "lineHeight": 40, "letterSpacing": -0.5 },
+      "h2": { "fontSize": 24, "fontWeight": "600", "lineHeight": 32, "letterSpacing": -0.25 },
+      "h3": { "fontSize": 20, "fontWeight": "600", "lineHeight": 28 },
+      "body_lg": { "fontSize": 18, "lineHeight": 28 },
+      "body": { "fontSize": 16, "lineHeight": 24 },
+      "caption": { "fontSize": 14, "lineHeight": 20, "color": "#64748B" }
+    }
+  },
+  "colors": {
+    "primary": {
+      "main": "#0056D2",
+      "light": "#E3F2FD",
+      "dark": "#0041A3",
+      "contrast": "#FFFFFF"
+    },
+    "status": {
+      "safe": "#10B981",
+      "warning": "#F59E0B",
+      "danger": "#EF4444",
+      "neutral": "#94A3B8"
+    },
+    "background": {
+      "default": "#F8FAFC",
+      "paper": "#FFFFFF",
+      "input": "#F1F5F9"
+    },
+    "text": {
+      "primary": "#1E293B",
+      "secondary": "#64748B",
+      "disabled": "#CBD5E1"
+    },
+    "border": "#E2E8F0"
+  },
+  "components": {
+    "Button": {
+      "primary": {
+        "backgroundColor": "#0056D2",
+        "borderRadius": 12,
+        "height": 56,
+        "justifyContent": "center",
+        "alignItems": "center"
+      },
+      "secondary": {
+        "backgroundColor": "transparent",
+        "borderWidth": 1,
+        "borderColor": "#0056D2",
+        "borderRadius": 12,
+        "height": 56,
+        "justifyContent": "center",
+        "alignItems": "center"
+      },
+      "text_style": {
+        "color": "#FFFFFF",
+        "fontSize": 16,
+        "fontWeight": "600"
+      }
+    },
+    "Card": {
+      "backgroundColor": "#FFFFFF",
+      "borderRadius": 16,
+      "padding": 20,
+      "shadowColor": "#000",
+      "shadowOffset": { "width": 0, "height": 2 },
+      "shadowOpacity": 0.05,
+      "shadowRadius": 8,
+      "elevation": 2,
+      "marginBottom": 16
+    },
+    "Input": {
+      "backgroundColor": "#F1F5F9",
+      "borderRadius": 12,
+      "padding": 16,
+      "fontSize": 16,
+      "color": "#1E293B",
+      "borderWidth": 1,
+      "borderColor": "transparent"
+    }
+  },
+  "icons": {
+    "library": "@expo/vector-icons",
+    "family": "MaterialCommunityIcons",
+    "mapping": {
+      "safe": "shield-check",
+      "warning": "shield-alert",
+      "danger": "shield-remove",
+      "scan": "line-scan",
+      "upload": "image-plus",
+      "text": "text-box-outline",
+      "check": "check-circle",
+      "close": "close-circle"
+    }
+  },
+  "images": {
+    "hero_background": {
+      "url": "https://images.unsplash.com/photo-1758637612717-e0cd7dc3cdea?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNzl8MHwxfHNlYXJjaHw0fHxhYnN0cmFjdCUyMGJsdWUlMjB0ZWNobm9sb2d5JTIwYmFja2dyb3VuZCUyMG1pbmltYWxpc3R8ZW58MHx8fHwxNzczODYzMDU1fDA&ixlib=rb-4.1.0&q=85",
+      "description": "Abstract blue geometric shapes background for Welcome Screen",
+      "usage": "Use as a subtle background image with overlay on the Welcome Screen"
+    }
+  },
+  "content": {
+    "questions": [
+      { "id": 1, "text": "Il mittente è generico (es. 'PosteInfo', 'Consegna') o un numero sconosciuto?" },
+      { "id": 2, "text": "Il messaggio crea un senso di urgenza (es. 'Agire subito', 'Conto bloccato')?" },
+      { "id": 3, "text": "Ci sono errori di grammatica o di ortografia?" },
+      { "id": 4, "text": "Chiede dati sensibili (password, PIN, dati carta)?" },
+      { "id": 5, "text": "Il link sembra strano (URL accorciato, dominio diverso dal sito ufficiale)?" },
+      { "id": 6, "text": "L'offerta è troppo bella per essere vera (es. premi, rimborsi inattesi)?" },
+      { "id": 7, "text": "Il messaggio è inatteso (es. non aspettavi pacchi o comunicazioni)?" }
+    ],
+    "risk_levels": {
+      "low": { "label": "RISCHIO BASSO", "color": "#10B981", "message": "Sembra un messaggio legittimo, ma fai sempre attenzione." },
+      "medium": { "label": "ATTENZIONE", "color": "#F59E0B", "message": "Ci sono alcuni segnali sospetti. Non cliccare link e verifica con il mittente ufficiale." },
+      "high": { "label": "ALTA PROBABILITÀ DI TRUFFA", "color": "#EF4444", "message": "Questo messaggio ha forti indicatori di truffa. Non rispondere e blocca il mittente." }
+    }
+  },
+  "technical_instructions": {
+    "styling": "Use StyleSheet.create({}) exclusively. No inline styles for complex objects.",
+    "layout": "Use Flexbox. Main container should have flex: 1 and backgroundColor: '#F8FAFC'.",
+    "safe_area": "Always wrap screen content in SafeAreaView or use useSafeAreaInsets.",
+    "navigation": "Use Expo Router (stack navigation).",
+    "testing": "Add testID prop to all interactive elements (buttons, inputs) for automation.",
+    "file_extension": "Use .tsx for all components as the project is TypeScript."
+  },
+  "universal_guidelines": [
+    "Do not use generic centered layouts for everything; use left alignment for text blocks.",
+    "Ensure high contrast for all text (minimum 4.5:1).",
+    "Use 8px grid system for spacing (8, 16, 24, 32).",
+    "Add ample padding (min 20px) inside cards.",
+    "Avoid gradients on text.",
+    "Use activity indicators (spinners) for any async operation."
+  ]
+}
