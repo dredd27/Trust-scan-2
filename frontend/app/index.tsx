@@ -128,79 +128,40 @@ export default function Index() {
   }, [inputMethod, messageText, imageBase64]);
 
   // ---------- Calculate Risk (LOCAL - works offline, no server needed) ----------
-  const calculateRisk = useCallback(async () => {
-    setLoadingRisk(true);
-
-    // Calculate score locally
+  const calculateRisk = useCallback(() => {
+    // v8 - Pure local calculation, zero network dependency
     let score = 0;
-    for (const a of answers) {
-      if (a === 'SI') score += 2;
-      else if (a === 'NON SO') score += 1;
-    }
-
-    let level: string;
-    let label: string;
-    let message: string;
-    let advice: string[];
-
-    if (score <= 3) {
-      level = 'BASSO';
-      label = 'RISCHIO BASSO';
-      message = 'Il messaggio presenta pochi elementi tipici delle truffe.';
-      advice = [
-        'Non inserire mai password o codici',
-        'Verifica sempre dal sito ufficiale',
-      ];
-    } else if (score <= 7) {
-      level = 'ATTENZIONE';
-      label = 'ATTENZIONE';
-      message = 'Il messaggio contiene elementi sospetti.';
-      advice = [
-        'Non cliccare sul link',
-        'Verifica direttamente dal sito ufficiale',
-        'Non farti mettere fretta',
-      ];
-    } else {
-      level = 'ALTO';
-      label = 'ALTA PROBABILITÀ DI TRUFFA';
-      message = 'Il messaggio presenta molte caratteristiche tipiche delle truffe.';
-      advice = [
-        'Non cliccare su alcun link',
-        'Non inserire dati personali',
-        'Elimina il messaggio',
-      ];
-    }
-
-    setRiskResult({
-      score,
-      level,
-      label,
-      message,
-      advice,
-      ai_analysis: aiAnalysis || null,
+    answers.forEach((a) => {
+      if (a === 'SI') score = score + 2;
+      if (a === 'NON SO') score = score + 1;
     });
 
-    // Also save to backend in background (optional, non-blocking)
-    try {
-      const answerList = answers.map((a, i) => ({
-        question_id: i + 1,
-        answer: a || 'NO',
-      }));
-      fetch(`${BACKEND_URL}/api/calculate-risk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          answers: answerList,
-          message_text: messageText || extractedText,
-          ai_analysis: aiAnalysis,
-        }),
-      }).catch(() => {}); // Silently fail - saving is optional
-    } catch (e) {
-      // Ignore - backend save is optional
+    if (score <= 3) {
+      setRiskResult({
+        score,
+        level: 'BASSO',
+        label: 'RISCHIO BASSO',
+        message: 'Il messaggio presenta pochi elementi tipici delle truffe.',
+        advice: ['Non inserire mai password o codici', 'Verifica sempre dal sito ufficiale'],
+      });
+    } else if (score <= 7) {
+      setRiskResult({
+        score,
+        level: 'ATTENZIONE',
+        label: 'ATTENZIONE',
+        message: 'Il messaggio contiene elementi sospetti.',
+        advice: ['Non cliccare sul link', 'Verifica direttamente dal sito ufficiale', 'Non farti mettere fretta'],
+      });
+    } else {
+      setRiskResult({
+        score,
+        level: 'ALTO',
+        label: 'ALTA PROBABILITÀ DI TRUFFA',
+        message: 'Il messaggio presenta molte caratteristiche tipiche delle truffe.',
+        advice: ['Non cliccare su alcun link', 'Non inserire dati personali', 'Elimina il messaggio'],
+      });
     }
-
-    setLoadingRisk(false);
-  }, [answers, messageText, extractedText, aiAnalysis]);
+  }, [answers]);
 
   // ---------- Navigate Steps ----------
   const goToStep1 = () => {
@@ -214,10 +175,10 @@ export default function Index() {
     // Fire AI analysis in background
     analyzeMessage();
   };
-  const goToStep3 = async () => {
+  const goToStep3 = () => {
     setStep(3);
     scrollRef.current?.scrollTo({ y: 0 });
-    await calculateRisk();
+    calculateRisk();
   };
   const resetAll = () => {
     setStep(0);
@@ -481,14 +442,6 @@ export default function Index() {
 
   // ---------- Render Step 3 ----------
   const renderStep3 = () => {
-    if (loadingRisk) {
-      return (
-        <Animated.View entering={FadeIn.duration(400)} style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={C.primary} />
-          <Text style={styles.loadingText}>Calcolo del rischio in corso...</Text>
-        </Animated.View>
-      );
-    }
     if (!riskResult) return null;
 
     const levelColor =
@@ -504,6 +457,7 @@ export default function Index() {
     return (
       <Animated.View entering={FadeIn.duration(600)} style={styles.stepContainer}>
         <StepHeader step={3} title="Risultato" />
+        <Text style={{ fontSize: 10, color: '#999', textAlign: 'right' }}>v8</Text>
 
         {/* Risk Level Card */}
         <Animated.View entering={FadeInUp.duration(500)} style={[styles.resultCard, { backgroundColor: levelBg, borderColor: levelColor }]}>
