@@ -97,7 +97,7 @@ export default function Index() {
     }
   }, []);
 
-  // ---------- Analyze Message (AI) ----------
+  // ---------- Analyze Message (AI - optional, works when server available) ----------
   const analyzeMessage = useCallback(async () => {
     setLoadingAi(true);
     try {
@@ -119,21 +119,74 @@ export default function Index() {
         setExtractedText(data.extracted_text);
       }
     } catch (e) {
-      setAiAnalysis('Errore nella connessione al server.');
+      // AI is optional - app works without it
+      setAiAnalysis('');
+      setAiIndicators([]);
     } finally {
       setLoadingAi(false);
     }
   }, [inputMethod, messageText, imageBase64]);
 
-  // ---------- Calculate Risk ----------
+  // ---------- Calculate Risk (LOCAL - works offline, no server needed) ----------
   const calculateRisk = useCallback(async () => {
     setLoadingRisk(true);
+
+    // Calculate score locally
+    let score = 0;
+    for (const a of answers) {
+      if (a === 'SI') score += 2;
+      else if (a === 'NON SO') score += 1;
+    }
+
+    let level: string;
+    let label: string;
+    let message: string;
+    let advice: string[];
+
+    if (score <= 3) {
+      level = 'BASSO';
+      label = 'RISCHIO BASSO';
+      message = 'Il messaggio presenta pochi elementi tipici delle truffe.';
+      advice = [
+        'Non inserire mai password o codici',
+        'Verifica sempre dal sito ufficiale',
+      ];
+    } else if (score <= 7) {
+      level = 'ATTENZIONE';
+      label = 'ATTENZIONE';
+      message = 'Il messaggio contiene elementi sospetti.';
+      advice = [
+        'Non cliccare sul link',
+        'Verifica direttamente dal sito ufficiale',
+        'Non farti mettere fretta',
+      ];
+    } else {
+      level = 'ALTO';
+      label = 'ALTA PROBABILITÀ DI TRUFFA';
+      message = 'Il messaggio presenta molte caratteristiche tipiche delle truffe.';
+      advice = [
+        'Non cliccare su alcun link',
+        'Non inserire dati personali',
+        'Elimina il messaggio',
+      ];
+    }
+
+    setRiskResult({
+      score,
+      level,
+      label,
+      message,
+      advice,
+      ai_analysis: aiAnalysis || null,
+    });
+
+    // Also save to backend in background (optional, non-blocking)
     try {
       const answerList = answers.map((a, i) => ({
         question_id: i + 1,
         answer: a || 'NO',
       }));
-      const res = await fetch(`${BACKEND_URL}/api/calculate-risk`, {
+      fetch(`${BACKEND_URL}/api/calculate-risk`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -141,20 +194,12 @@ export default function Index() {
           message_text: messageText || extractedText,
           ai_analysis: aiAnalysis,
         }),
-      });
-      const data = await res.json();
-      setRiskResult(data);
+      }).catch(() => {}); // Silently fail - saving is optional
     } catch (e) {
-      setRiskResult({
-        score: 0,
-        level: 'ERRORE',
-        label: 'Errore',
-        message: 'Impossibile calcolare il rischio. Riprova.',
-        advice: [],
-      });
-    } finally {
-      setLoadingRisk(false);
+      // Ignore - backend save is optional
     }
+
+    setLoadingRisk(false);
   }, [answers, messageText, extractedText, aiAnalysis]);
 
   // ---------- Navigate Steps ----------
