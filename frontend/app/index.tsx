@@ -26,7 +26,7 @@ import Animated, {
   SlideInLeft,
 } from 'react-native-reanimated';
 
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://trust-scan-2.preview.emergentagent.com';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // ---------- Colors ----------
