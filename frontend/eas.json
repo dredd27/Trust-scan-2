@@ -4,22 +4,11 @@
   },
   "build": {
     "production": {
-      "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://scam-detector-app-4.preview.emergentagent.com"
-      },
       "ios": {
         "distribution": "store"
       },
       "android": {
         "distribution": "store"
-      }
-    }
-  },
-  "submit": {
-    "production": {
-      "ios": {
-        "appleId": "",
-        "ascAppId": ""
       }
     }
   }
