@@ -5,23 +5,28 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 import base64
-import tempfile
 from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
+from openai import AsyncOpenAI
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection
-mongo_url = os.environ['MONGO_URL']
+mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+db_name = os.environ.get('DB_NAME', 'test_database')
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = client[db_name]
 
-# LLM Key
+# OpenAI client with Emergent LLM Key
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
+openai_client = AsyncOpenAI(
+    api_key=EMERGENT_LLM_KEY,
+    base_url="https://api.emergentai.dev/v1"
+)
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
@@ -67,8 +72,7 @@ class RiskResult(BaseModel):
 
 async def analyze_with_ai(text: Optional[str] = None, image_base64: Optional[str] = None) -> dict:
     """Analyze a message using GPT for scam detection."""
-    from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
-
+    
     system_msg = (
         "Sei un esperto di sicurezza informatica specializzato nel rilevamento di truffe e phishing. "
         "Analizza il messaggio fornito e identifica gli indicatori di truffa. "
@@ -80,63 +84,70 @@ async def analyze_with_ai(text: Optional[str] = None, image_base64: Optional[str
         "INDICATORI: [indicatore1], [indicatore2], ..."
     )
 
-    chat = LlmChat(
-        api_key=EMERGENT_LLM_KEY,
-        session_id=str(uuid.uuid4()),
-        system_message=system_msg
-    )
-    chat.with_model("openai", "gpt-4o")
-
     extracted_text = None
 
-    if image_base64 and not text:
-        # Use vision to extract and analyze the image
-        image_content = ImageContent(image_base64=image_base64)
-        user_message = UserMessage(
-            text="Estrai il testo da questa immagine di un messaggio e analizzalo per rilevare indicatori di truffa.",
-            file_contents=[image_content]
-        )
-    elif text:
-        user_message = UserMessage(
-            text=f"Analizza questo messaggio per rilevare indicatori di truffa:\n\n{text}"
-        )
-    else:
-        return {"extracted_text": None, "ai_analysis": "Nessun messaggio fornito.", "risk_indicators": []}
-
     try:
-        response = await chat.send_message(user_message)
+        if image_base64 and not text:
+            # Analyze image with vision
+            response = await openai_client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": system_msg},
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": "Estrai il testo da questa immagine di un messaggio e analizzalo per rilevare indicatori di truffa."},
+                            {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"}}
+                        ]
+                    }
+                ],
+                max_tokens=1000
+            )
+            
+            # Also extract just the text
+            extract_response = await openai_client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": "Sei un assistente OCR. Estrai SOLO il testo presente nell'immagine, senza commenti."},
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": "Estrai tutto il testo visibile in questa immagine. Restituisci solo il testo, nient'altro."},
+                            {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"}}
+                        ]
+                    }
+                ],
+                max_tokens=500
+            )
+            extracted_text = extract_response.choices[0].message.content
+            
+        elif text:
+            response = await openai_client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": system_msg},
+                    {"role": "user", "content": f"Analizza questo messaggio per rilevare indicatori di truffa:\n\n{text}"}
+                ],
+                max_tokens=1000
+            )
+        else:
+            return {"extracted_text": None, "ai_analysis": "Nessun messaggio fornito.", "risk_indicators": []}
 
-        # Parse response
-        ai_analysis = response
+        response_text = response.choices[0].message.content
+        ai_analysis = response_text
         risk_indicators = []
 
-        if "ANALISI:" in response and "INDICATORI:" in response:
-            parts = response.split("INDICATORI:")
+        if "ANALISI:" in response_text and "INDICATORI:" in response_text:
+            parts = response_text.split("INDICATORI:")
             analysis_part = parts[0].replace("ANALISI:", "").strip()
             indicators_part = parts[1].strip() if len(parts) > 1 else ""
             ai_analysis = analysis_part
             risk_indicators = [i.strip() for i in indicators_part.split(",") if i.strip()]
-        elif "INDICATORI:" in response:
-            parts = response.split("INDICATORI:")
+        elif "INDICATORI:" in response_text:
+            parts = response_text.split("INDICATORI:")
             ai_analysis = parts[0].strip()
             indicators_part = parts[1].strip() if len(parts) > 1 else ""
             risk_indicators = [i.strip() for i in indicators_part.split(",") if i.strip()]
-
-        # If we used an image, try to extract text from the analysis
-        if image_base64 and not text:
-            # Send a follow up to extract just the text
-            extract_chat = LlmChat(
-                api_key=EMERGENT_LLM_KEY,
-                session_id=str(uuid.uuid4()),
-                system_message="Sei un assistente OCR. Estrai SOLO il testo presente nell'immagine, senza commenti."
-            )
-            extract_chat.with_model("openai", "gpt-4o")
-            image_content2 = ImageContent(image_base64=image_base64)
-            extract_msg = UserMessage(
-                text="Estrai tutto il testo visibile in questa immagine. Restituisci solo il testo, nient'altro.",
-                file_contents=[image_content2]
-            )
-            extracted_text = await extract_chat.send_message(extract_msg)
 
         return {
             "extracted_text": extracted_text,
