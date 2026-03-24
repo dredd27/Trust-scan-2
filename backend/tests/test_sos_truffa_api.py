@@ -12,7 +12,7 @@ from PIL import Image
 # Get backend URL from environment
 BACKEND_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL')
 if not BACKEND_URL:
-    BACKEND_URL = "https://trust-scan-2.preview.emergentagent.com"
+    BACKEND_URL = "https://scam-detector-app-4.preview.emergentagent.com"
 BACKEND_URL = BACKEND_URL.rstrip('/')
 
 class TestHealthCheck:

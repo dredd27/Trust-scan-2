@@ -12,8 +12,8 @@ import {
   Keyboard,
   Image,
   Dimensions,
-  Modal,
   Linking,
+  Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -26,7 +26,7 @@ import Animated, {
   SlideInLeft,
 } from 'react-native-reanimated';
 
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://trust-scan-2.preview.emergentagent.com';
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://scam-detector-app-4.preview.emergentagent.com';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // ---------- Colors ----------
@@ -77,7 +77,6 @@ export default function Index() {
   const [riskResult, setRiskResult] = useState<any>(null);
   const [loadingAi, setLoadingAi] = useState(false);
   const [loadingRisk, setLoadingRisk] = useState(false);
-  const [donationModal, setDonationModal] = useState<'paypal' | 'satispay' | null>(null);
   const scrollRef = useRef<ScrollView>(null);
 
   // ---------- Pick Image ----------
@@ -198,6 +197,22 @@ export default function Index() {
     const newAnswers = [...answers];
     newAnswers[index] = value;
     setAnswers(newAnswers);
+  };
+
+  // Share app with friends
+  const shareApp = async () => {
+    try {
+      await Share.share({
+        message: Platform.OS === 'ios' 
+          ? 'Hai ricevuto un messaggio sospetto? Verifica se e una truffa con SOS Truffa!'
+          : 'Hai ricevuto un messaggio sospetto? Verifica se e una truffa con SOS Truffa! Scarica l\'app: https://apps.apple.com/app/sos-truffa',
+        url: 'https://apps.apple.com/app/sos-truffa', // iOS only - will be ignored on Android
+        title: 'SOS Truffa - Verifica Messaggi',
+      });
+    } catch (error) {
+      // User cancelled or error occurred
+      console.log('Share error:', error);
+    }
   };
 
   const canProceedStep1 =
@@ -528,55 +543,18 @@ export default function Index() {
         <Animated.View entering={FadeInDown.delay(600).duration(400)} style={styles.supportSection}>
           <Text style={styles.supportTitle}>Ti è stato utile?</Text>
           <Text style={styles.supportDesc}>
-            Salva questo strumento tra i preferiti per averlo sempre a portata di mano.
+            Condividi questa app con chi potrebbe averne bisogno.
           </Text>
 
           <TouchableOpacity
-            testID="add-bookmark-btn"
-            style={styles.bookmarkBtn}
-            onPress={() => {
-              const appUrl = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://trust-scan-2.preview.emergentagent.com';
-              Linking.openURL(appUrl);
-            }}
+            testID="share-app-btn"
+            style={styles.shareBtn}
+            onPress={shareApp}
             activeOpacity={0.8}
           >
-            <MaterialCommunityIcons name="bookmark-plus" size={22} color={C.primary} />
-            <Text style={styles.bookmarkBtnText}>Aggiungi ai Preferiti</Text>
+            <MaterialCommunityIcons name="share-variant" size={22} color="#FFF" />
+            <Text style={styles.shareBtnText}>Condividi con un amico</Text>
           </TouchableOpacity>
-
-          <View style={styles.donationDivider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>oppure</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          <Text style={styles.donationDesc}>
-            Vuoi supportare questo progetto gratuito?
-          </Text>
-
-          <View style={styles.donationRow}>
-            <TouchableOpacity
-              testID="donate-paypal-btn"
-              style={styles.donateBtn}
-              onPress={() => Linking.openURL('https://www.paypal.com/qrcodes/p2pqrc/KCLXJ8CWZ8BES')}
-              activeOpacity={0.8}
-            >
-              <MaterialCommunityIcons name="coffee" size={20} color="#003087" />
-              <Text style={styles.donateBtnText}>Offri un caffè</Text>
-              <Text style={styles.donateBtnSub}>PayPal</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              testID="donate-satispay-btn"
-              style={styles.donateBtn}
-              onPress={() => setDonationModal('satispay')}
-              activeOpacity={0.8}
-            >
-              <MaterialCommunityIcons name="heart" size={20} color="#E42313" />
-              <Text style={styles.donateBtnText}>Dona con</Text>
-              <Text style={styles.donateBtnSub}>Satispay</Text>
-            </TouchableOpacity>
-          </View>
         </Animated.View>
 
         {/* Nuova Verifica - at the very bottom */}
@@ -584,41 +562,6 @@ export default function Index() {
           <MaterialCommunityIcons name="refresh" size={22} color="#FFF" />
           <Text style={styles.primaryBtnText}>Nuova Verifica</Text>
         </TouchableOpacity>
-
-        {/* Donation Modal */}
-        <Modal
-          visible={donationModal !== null}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setDonationModal(null)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <TouchableOpacity
-                testID="close-donation-modal"
-                style={styles.modalClose}
-                onPress={() => setDonationModal(null)}
-              >
-                <MaterialCommunityIcons name="close" size={24} color={C.textSecondary} />
-              </TouchableOpacity>
-              <Text style={styles.modalTitle}>
-                {donationModal === 'paypal' ? 'Dona con PayPal' : 'Dona con Satispay'}
-              </Text>
-              <Text style={styles.modalDesc}>
-                Scansiona il QR code per fare una donazione
-              </Text>
-              <Image
-                source={
-                  donationModal === 'paypal'
-                    ? require('../assets/images/paypal_qr.jpeg')
-                    : require('../assets/images/satispay_qr.jpeg')
-                }
-                style={styles.qrImage}
-              />
-              <Text style={styles.modalThank}>Grazie per il tuo supporto!</Text>
-            </View>
-          </View>
-        </Modal>
       </Animated.View>
     );
   };
@@ -1140,113 +1083,24 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginBottom: 16,
   },
-  bookmarkBtn: {
+  shareBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: C.primaryLight,
-    paddingVertical: 14,
+    backgroundColor: C.primary,
+    paddingVertical: 16,
     paddingHorizontal: 28,
     borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: C.primary,
+    shadowColor: C.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  bookmarkBtnText: {
+  shareBtnText: {
     fontSize: 16,
     fontWeight: '600',
-    color: C.primary,
-  },
-  donationDivider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 20,
-    width: '100%',
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: C.border,
-  },
-  dividerText: {
-    fontSize: 13,
-    color: C.textSecondary,
-    paddingHorizontal: 12,
-  },
-  donationDesc: {
-    fontSize: 14,
-    color: C.textSecondary,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  donationRow: {
-    flexDirection: 'row',
-    gap: 12,
-    width: '100%',
-  },
-  donateBtn: {
-    flex: 1,
-    backgroundColor: C.bg,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    gap: 4,
-    borderWidth: 1,
-    borderColor: C.border,
-  },
-  donateBtnText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: C.textPrimary,
-  },
-  donateBtnSub: {
-    fontSize: 12,
-    color: C.textSecondary,
+    color: '#FFF',
   },
 
-  // Modal
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  modalContent: {
-    backgroundColor: C.paper,
-    borderRadius: 20,
-    padding: 28,
-    alignItems: 'center',
-    width: '100%',
-    maxWidth: 360,
-  },
-  modalClose: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    padding: 8,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: C.textPrimary,
-    marginBottom: 8,
-  },
-  modalDesc: {
-    fontSize: 14,
-    color: C.textSecondary,
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  qrImage: {
-    width: 250,
-    height: 250,
-    borderRadius: 12,
-    resizeMode: 'contain',
-  },
-  modalThank: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: C.primary,
-    marginTop: 16,
-  },
 });

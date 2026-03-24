@@ -1,0 +1,196 @@
+<analysis>**original_problem_statement:**
+Titolo: SOS Truffa – Verifica Messaggi
+
+Descrizione:
+Hai ricevuto un SMS, una email o un messaggio sospetto?
+Verifica in pochi passaggi il livello di rischio.
+
+PRODUCT REQUIREMENTS:
+- L'utente può caricare uno screenshot o incollare il testo di un messaggio.
+- L'app pone una serie di domande (inizialmente 7, poi estese a 8) per valutare il rischio.
+- Viene calcolato un punteggio di rischio (Basso, Attenzione, Alto) basato sulle risposte.
+- Il risultato viene visualizzato con consigli pratici.
+- Un'analisi AI (con OpenAI GPT) fornisce un'ulteriore valutazione del testo o dell'immagine.
+- L'interfaccia deve essere in italiano.
+- (Aggiunto dopo) Il punteggio numerico non deve essere visibile all'utente.
+- (Aggiunto dopo) Aggiungere pulsanti di donazione (PayPal, Satispay).
+- (Bocciato da Apple) Rimuovere i pulsanti di donazione.
+- (Aggiunto dopo) Preparare l'app per la pubblicazione su App Store (icona, splash screen, metadati).
+- (Aggiunto dopo) La funzionalità principale di calcolo del rischio deve funzionare offline.
+
+**User's preferred language**: Italian
+
+**what currently exists?**
+È stata sviluppata un'applicazione full-stack con React Native Expo per il frontend e FastAPI/MongoDB per il backend. L'app, chiamata SOS Truffa, permette agli utenti di valutare il rischio di messaggi sospetti.
+
+A seguito di problemi di connettività riscontrati durante i test su TestFlight e del rigetto da parte di Apple per i pulsanti di donazione, sono state apportate modifiche significative:
+1.  **Calcolo del Rischio Offline**: La logica di calcolo del punteggio è stata spostata dal backend al frontend (), rendendo la funzionalità principale dell'app completamente operativa senza connessione a internet.
+2.  **Analisi AI Opzionale**: La chiamata al backend per l'analisi AI del messaggio è gestita come una funzionalità aggiuntiva che non blocca l'app se il server non è raggiungibile. Mostra un messaggio informativo (Servizio IA non disponibile).
+3.  **Rimozione Donazioni**: I pulsanti e la logica per le donazioni con PayPal e Satispay sono stati nascosti dall'interfaccia per conformarsi alle linee guida dell'App Store.
+4.  **Preparazione per App Store**: Sono stati creati e configurati un'icona, uno splash screen e un file  con i metadati per la pubblicazione.
+5.  **Fix UI/UX**: Sono state apportate diverse migliorie grafiche su richiesta dell'utente, come la modifica dei colori del testo per una migliore leggibilità e la sostituzione del pulsante Aggiungi ai Preferiti con Condividi con un amico.
+
+L'utente sta eseguendo i build per l'App Store localmente da un PC Windows, seguendo le istruzioni dell'agente.
+
+**Last working item**:
+- Last item agent was working: L'agente stava guidando l'utente a rimuovere i pulsanti di donazione (nascosti tramite ) e a correggere i problemi di encoding e gli errori di sintassi (apostrofi) causati da modifiche manuali dei file su Windows. L'obiettivo era creare una build pulita e funzionante per superare la revisione di Apple.
+- Status: USER VERIFICATION PENDING
+- Agent Testing Done: N
+- Which testing method agent to use? NA(if testing is already done)
+- User Testing Done: Y
+
+**All Pending/In progress Issue list**:
+  Issue 1:  (P1) L'agente AI non è affidabile in produzione
+  Issue 2:  (P2) Il pulsante Condividi con un amico non ha una logica di condivisione nativa
+  
+  Issues Detail:
+  - Issue 1: 
+     - Attempted fixes: La logica AI è stata resa opzionale per non bloccare l'app, ma si basa ancora su un URL di backend temporaneo ().
+     - Next debug checklist: 
+        1. Seguire le istruzioni per il deploy del backend su una piattaforma stabile come Railway, come richiesto dall'utente.
+        2. Ottenere l'URL di produzione stabile del backend deployato.
+        3. Aggiornare la variabile d'ambiente  nel frontend con il nuovo URL stabile.
+        4. Eseguire un nuovo build dell'app per includere l'URL di produzione.
+     - Why fix this issue and what will be achieved with the fix? Per rendere la funzionalità di analisi AI, un valore aggiunto dell'app, stabile e sempre disponibile per gli utenti finali dopo la pubblicazione.
+     - Status:  NOT STARTED
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix? backend
+     - Blocked on other issue: None
+  - Issue 2: 
+     - Attempted fixes: L'agente ha cambiato il testo e l'icona da Aggiungi ai Preferiti a Condividi con un amico. Tuttavia, la logica  usa ancora  con l'URL dell'app, che non è un'azione di condivisione nativa.
+     - Next debug checklist: 
+        1.  Modificare la funzione  del pulsante Condividi.
+        2.  Utilizzare l'API  di React Native ().
+        3.  Implementare una funzione come .
+     - Why fix this issue and what will be achieved with the fix? Per fornire una vera funzionalità di condivisione che apra il menu di condivisione nativo di iOS/Android, migliorando l'esperienza utente e favorendo la diffusione dell'app.
+     - Status:  NOT STARTED
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix? frontend
+     - Blocked on other issue: None
+
+**In progress Task List**:
+N/A
+
+**Upcoming and Future Tasks**
+Upcoming Tasks:
+- (P0) Deploy del backend FastAPI su Railway e collegamento all'app mobile.
+- (P2) Implementazione della funzionalità di condivisione nativa.
+- (P3) Rimozione/sistemazione dei numeri di versione (es. v10) aggiunti per il debug.
+
+Future Tasks:
+- Aggiungere una dashboard analytics o un contatore di visite all'interno dell'app, come discusso con l'utente.
+
+**Completed work in this session**
+- Sviluppo iniziale dell'app (frontend wizard e backend API).
+- Integrazione OpenAI per analisi testo e OCR (con Emergent LLM Key).
+- Aggiunta di un'ottava domanda di verifica su richiesta.
+- Risoluzione di un bug sull'analisi delle immagini (legato ai crediti LLM).
+- Numerosi miglioramenti UI/UX sulla base del feedback utente (colori, layout, rimozione punteggio).
+- Aggiunta (e successiva rimozione/occultamento) di pulsanti di donazione.
+- Preparazione dell'app per la pubblicazione sull'App Store (icona, splash screen, , ).
+- **Architettura modificata**: Il calcolo del rischio è stato reso locale/offline per garantire il funzionamento senza server e superare la revisione Apple.
+- Risoluzione di un complesso problema di build su TestFlight legato a file locali non sincronizzati, cache di EAS e problemi di encoding su Windows.
+
+- Recently completed:
+  - Pulsanti di donazione nascosti per superare la revisione Apple. (DONE)
+  - Messaggistica di errore migliorata (es. per l'IA non disponibile). (DONE)
+  - Problemi di encoding dei caratteri accentati risolti tramite script PowerShell. (DONE)
+
+**Earlier issues found/mentioned but not fixed**
+   - Issue 1: L'utente ha riscontrato problemi di accesso alla piattaforma Emergent ( bloccato su una schermata di caricamento), che gli ha impedito di recuperare l'URL di deploy permanente.
+     - Debug checklist: Questo è un problema di piattaforma, non di codice. L'agente ha correttamente indirizzato l'utente al supporto di Emergent. Non ci sono azioni di codice da intraprendere.
+     - Why to solve this issue and what will be achieved with this? Per consentire all'utente di gestire i suoi deploy.
+     - Should Test frontend/backend/both after fix: N/A
+     - Is recurring issue? N
+
+**Known issue recurrence from previous fork**
+  - Issue recurrence in previous fork: **La build su TestFlight non riflette il codice più recente.**
+  - Recurrence count: ~5+
+  - Status: RESOLVED
+  Note: Questo è stato il problema più critico e dispendioso della sessione. La causa era una catena di problemi:  non aggiornava correttamente i file sul PC Windows dell'utente, cache di EAS, e file modificati manualmente con editor che corrompevano l'encoding. La soluzione definitiva è stata fornire all'utente script PowerShell per ripristinare il file originale da git (M	frontend/app/index.tsx
+M	frontend/eas.json) e applicare le modifiche in modo programmatico per garantire l'integrità del file e dell'encoding. Il prossimo agente deve essere consapevole che l'utente compila localmente e che il suo ambiente locale può essere una fonte di problemi.
+
+**Code Architecture**
+- **Frontend**: React Native (Expo) in . App a pagina singola () che gestisce un wizard a più passaggi (). Utilizza .
+- **Backend**: FastAPI in . Un unico file  con endpoint per l'analisi del messaggio () e il salvataggio dei risultati ().
+- **Database**: MongoDB (la connessione è in ).
+- **Build**: L'utente sta usando EAS Build localmente su un PC Windows per creare i pacchetti  per l'App Store.
+
+**Key Technical Concepts**
+- React Native / Expo
+- FastAPI / Python
+- MongoDB
+- Calcolo logico offline (spostato da backend a frontend)
+- EAS Build (con ) e TestFlight
+- Gestione di problemi di encoding (UTF-8) su Windows
+- Debug di build locali tramite PowerShell e CMD
+
+**key DB schema**
+- **analyses** (implicito): 
+
+**changes in tech stack**
+- La logica principale di calcolo del rischio è stata spostata da un'architettura client-server a una **puramente locale/offline** sul frontend per garantire l'affidabilità e superare la revisione dell'App Store.
+
+**All files of reference**
+- : Il cuore dell'applicazione, contiene tutta la UI e la logica frontend, inclusa la funzione di calcolo del rischio ora locale.
+- : Il server FastAPI che gestisce l'analisi AI e il salvataggio dei dati.
+- : File di configurazione di Expo, aggiornato con icona, splash screen e metadati per l'App Store.
+- : Aggiunto per tentare di forzare l'inclusione di variabili d'ambiente durante il build di EAS.
+- : Documento con le descrizioni e le parole chiave da usare su App Store Connect.
+- : Modificato per tentare di includere i file  nel repository, parte del lungo processo di debug.
+
+**Areas that need refactoring**:
+- La gestione della variabile  in  ha un fallback hardcoded. Ora che il deploy su Railway è il prossimo passo, andrebbe pulita per usare solo .
+- I pulsanti di donazione sono nascosti con . Per una pulizia definitiva, andrebbero rimossi completamente dal codice JSX invece di essere solo nascosti.
+
+**key api endpoints**
+- : Accetta testo o immagine base64, la analizza con GPT-4o e restituisce il testo estratto e un'analisi del rischio.
+- : Inizialmente calcolava il rischio, ora serve solo a salvare in background (in modo non bloccante) i risultati di un'analisi.
+- : Endpoint di health check.
+
+**Critical Info for New Agent**
+- **L'utente compila l'app localmente da un PC Windows**. Il  si è dimostrato inaffidabile. I problemi di build sono quasi certamente legati a file non aggiornati o corrotti nell'ambiente locale dell'utente.
+- **La soluzione più efficace per le modifiche è stata fornire script PowerShell** che prima ripristinano il file con M	backend/tests/test_sos_truffa_api.py
+M	frontend/app/index.tsx
+M	frontend/eas.json e poi applicano le modifiche con . Non fare affidamento sulla modifica manuale dei file da parte dell'utente.
+- Il calcolo del rischio core è **OFFLINE** e avviene nel frontend. L'API backend serve solo per l'analisi AI (bonus) e il salvataggio dei dati.
+- Apple ha **rifiutato l'app a causa dei pulsanti di donazione**. Sono stati nascosti ma non rimossi del tutto.
+
+**documents and test reports created in this job**
+- 
+- 
+-  (creato dal testing agent)
+- 
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **User**: Conferma che ora l'app funziona senza banner di donazione. Chiede come implementare la parte AI su Railway, avendone creato un account.
+2.  **Agent**: Inizia la ricerca su come deployare FastAPI su Railway.
+3.  **User**: Incolla i comandi per creare un repo GitHub.
+4.  **Agent**: Spiega che Emergent gestisce la sincronizzazione e guida l'utente a usare il pulsante Save to GitHub.
+5.  **User**: Non trova il link per salvare.
+6.  **Agent**: Fornisce istruzioni su dove trovare il pulsante Save to GitHub.
+7.  **User**: Conferma di aver salvato su GitHub.
+8.  **Agent**: Fornisce i comandi per il build locale e chiede se preparare icona/splash screen.
+9.  **User**: Sì, chiede di prepararli.
+10. **Agent**: Genera icona e splash screen.
+
+**Project Health Check:**
+- Broken:
+  - L'analisi AI dipende da un URL di backend () che è temporaneo e instabile. Questo è il prossimo task da risolvere con il deploy su Railway.
+- Mocked: N/A
+
+**3rd Party Integrations**
+- OpenAI GPT-4o: Utilizzata tramite la libreria  e la  per l'analisi AI dei messaggi.
+- PayPal / Satispay: Aggiunti tramite link/QR code, ma poi nascosti a causa del rigetto dell'App Store.
+
+**Testing status**
+- Testing agent used after significant changes: YES (usato all'inizio, ma non dopo le modifiche per il fix offline).
+- Troubleshoot agent used after agent stuck in loop: NO
+- Test files created: []
+- Known regressions: Nessuna.
+
+**Credentials to test flow:**
+N/A. L'app non ha autenticazione. La chiave  è già nell'ambiente.
+
+**What agent forgot to execute**
+- Il pulsante Condividi con un amico è stato modificato solo esteticamente. La sua funzionalità non è stata implementata con l'API  di React Native, ma usa ancora un semplice .</analysis>
