@@ -1,0 +1,19 @@
+# Render deployment configuration for SOS Truffa backend
+# No database required — backend is stateless (calls OpenAI via Emergent LLM Key only)
+
+services:
+  - type: web
+    name: sos-truffa-backend
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: EMERGENT_LLM_KEY
+        sync: false        # set manually in Render dashboard
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: PYTHON_VERSION
+        value: 3.11.9

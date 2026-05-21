@@ -1,11 +1,8 @@
 from fastapi import FastAPI, APIRouter
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
-import base64
-import tempfile
 from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List, Optional
@@ -14,11 +11,6 @@ from datetime import datetime, timezone
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
-
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
 
 # LLM Key
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
@@ -155,7 +147,12 @@ async def analyze_with_ai(text: Optional[str] = None, image_base64: Optional[str
 
 @api_router.get("/")
 async def root():
-    return {"message": "SOS Truffa API attiva"}
+    return {"message": "SOS Truffa API attiva", "status": "ok"}
+
+@api_router.get("/health")
+async def health():
+    """Health check endpoint for deployment platforms."""
+    return {"status": "healthy"}
 
 @api_router.post("/analyze-message", response_model=AnalyzeMessageResponse)
 async def analyze_message(request: AnalyzeMessageRequest):
@@ -177,7 +174,11 @@ async def analyze_message(request: AnalyzeMessageRequest):
 
 @api_router.post("/calculate-risk", response_model=RiskResult)
 async def calculate_risk(request: CalculateRiskRequest):
-    """Calculate risk score based on answers and optionally AI analysis."""
+    """Calculate risk score based on answers and optionally AI analysis.
+
+    Stateless: no DB persistence. The frontend already performs offline calculation.
+    This endpoint exists only as a fallback / parity check.
+    """
     score = 0
     for answer in request.answers:
         if answer.answer == "SI":
@@ -213,7 +214,7 @@ async def calculate_risk(request: CalculateRiskRequest):
             "Elimina il messaggio"
         ]
 
-    risk_result = RiskResult(
+    return RiskResult(
         score=score,
         level=level,
         label=label,
@@ -221,18 +222,6 @@ async def calculate_risk(request: CalculateRiskRequest):
         advice=advice,
         ai_analysis=request.ai_analysis
     )
-
-    # Save to MongoDB
-    result_dict = risk_result.dict()
-    await db.risk_analyses.insert_one(result_dict)
-
-    return risk_result
-
-@api_router.get("/analyses", response_model=List[RiskResult])
-async def get_analyses():
-    """Get recent analyses."""
-    analyses = await db.risk_analyses.find({}, {"_id": 0}).sort("timestamp", -1).limit(50).to_list(50)
-    return [RiskResult(**a) for a in analyses]
 
 # Include router
 app.include_router(api_router)
@@ -244,7 +233,3 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
