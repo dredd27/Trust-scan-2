@@ -15,7 +15,8 @@
       "buildNumber": "1",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Carica screenshot di messaggi sospetti",
-        "CFBundleDisplayName": "SOS Truffa"
+        "CFBundleDisplayName": "SOS Truffa",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -51,6 +52,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "4648bb46-6432-4819-a5a7-5bbab65159c4"
+      }
     }
   }
 }
